@@ -1,7 +1,9 @@
 package com.connectrn.tablereservation.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,6 +19,9 @@ public class Reservation {
     private int capacity;
     @OneToMany(mappedBy = "reservation")
     private Set<Table> tables = new HashSet<>();
+    @NotBlank(message = "userName is blank")
+    @Size(max = UserInfo.MAX_NAME_LENGTH, message = "userName is too long")
+    private String userName;
 
     public Reservation() {}
 
@@ -44,6 +49,14 @@ public class Reservation {
         this.tables = tables;
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
     public void addTables(Collection<Table> tables) {
         requireNonNull(tables, "tables is null");
         for (Table table : tables) {
@@ -66,6 +79,7 @@ public class Reservation {
                 "id=" + id +
                 ", capacity=" + capacity +
                 ", tables=" + tables +
+                ", userName='" + userName + '\'' +
                 '}';
     }
 

@@ -25,6 +25,9 @@
                 <constraints nullable="false"/>
             </column>
             <column name="restaurant_id" type="BIGINT"/>
+            <column name="user_name" type="VARCHAR(256)">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
     <changeSet id="create_guest_table_table" author="mxsokal">

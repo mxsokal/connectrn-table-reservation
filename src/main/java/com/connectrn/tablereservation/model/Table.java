@@ -75,7 +75,7 @@ public class Table {
         return "Table{" +
                 "id=" + id +
                 ", capacity=" + capacity +
-                ", reservation=" + reservation +
+                ", reservation=" + ((reservation != null) ? reservation.getId() : null) +
                 '}';
     }
 

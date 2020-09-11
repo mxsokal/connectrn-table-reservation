@@ -6,6 +6,7 @@ import com.connectrn.tablereservation.service.ReservationException;
 import com.connectrn.tablereservation.service.ReservationService;
 import com.connectrn.tablereservation.service.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -19,6 +20,7 @@ import java.util.Set;
 @RestController
 @RequestMapping(path="/api/reservations")
 @Validated
+@Scope("session")
 public class ReservationController {
 
     private final ReservationService service;

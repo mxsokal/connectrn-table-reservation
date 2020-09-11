@@ -1,6 +1,7 @@
 package com.connectrn.tablereservation.service;
 
 import com.connectrn.tablereservation.cofig.ConfigProperties;
+import com.connectrn.tablereservation.model.UserInfo;
 import com.connectrn.tablereservation.model.Reservation;
 import com.connectrn.tablereservation.model.Restaurant;
 import com.connectrn.tablereservation.model.Table;
@@ -9,6 +10,7 @@ import com.connectrn.tablereservation.selector.TableSelector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.dao.DataAccessException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ import java.util.Set;
 import static java.util.Objects.requireNonNull;
 
 @Service
+@Scope("session")
 public class ReservationService {
 
     private static final Logger log = LoggerFactory.getLogger(ReservationService.class);
@@ -28,15 +31,18 @@ public class ReservationService {
     private final int maxCapacity;
     private final TableSelector tableSelector;
     private final RestaurantRepository repository;
+    private final UserInfo userInfo;;
 
     @Autowired
-    public ReservationService(TableSelector tableSelector, RestaurantRepository repository, ConfigProperties properties) {
+    public ReservationService(TableSelector tableSelector, RestaurantRepository repository, ConfigProperties properties,
+                              UserInfo userInfo) {
         requireNonNull(properties, "properties is null");
         this.restaurantName = properties.getRestaurantName();
         this.maxCount = properties.getMaxReservationCount();
         this.maxCapacity = properties.getMaxReservationCapacity();
         this.tableSelector = requireNonNull(tableSelector, "tableSelector is null");
         this.repository = requireNonNull(repository, "repository is null");
+        this.userInfo = requireNonNull(userInfo, "userInfo is null");
     }
 
     public Reservation makeReservation(int capacity) throws ReservationException, ServiceException {
@@ -84,6 +90,7 @@ public class ReservationService {
 
         result.setCapacity(capacity);
         result.addTables(tables);
+        result.setUserName(userInfo.getName());
         return result;
     }
 
@@ -108,6 +115,9 @@ public class ReservationService {
                 .findAny().orElse(null);
         if (reservation == null) {
             throw new ReservationException("unable to find reservation "+ id);
+        }
+        if ((!userInfo.isAdmin()) && (!Objects.equals(userInfo.getName(), reservation.getUserName()))) {
+            throw new ReservationException("unable to remove reservation "+ id);
         }
         return reservation;
     }
