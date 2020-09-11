@@ -25,6 +25,7 @@ public final class TableSelectorImpl implements TableSelector {
             throw new IllegalArgumentException("invalid capacity value " + capacity);
         }
         tablesByCapacity = getTablesByCapacity(tables);
+        // layout == a set of tables distributed into buckets by capacity
         layout = getLayout(tablesByCapacity);
         if (layout.getTotalCapacity() >= capacity) {
             reservedLayout = select(layout, capacity, new HashMap<>());
@@ -51,7 +52,9 @@ public final class TableSelectorImpl implements TableSelector {
     }
 
     // Dynamic Programming: recursion + memoization
-    // The goal is to find a table layout to reserve which minimizes the wasted space.
+    // The goal is to find a table layout which minimizes the wasted space. Since we can have only 2 active reservations
+    // at the same time, this approach will give us the optimum table selection, because we don't care what tables are
+    // left free. We just need to minimize wasted space when picking tables.
     private Layout select(Layout layout, int capacity, Map<Integer, Map<Layout, Layout>> cache) {
         Layout result;
         Layout subLayout;
@@ -61,19 +64,26 @@ public final class TableSelectorImpl implements TableSelector {
 
         result = cache.computeIfAbsent(capacity, k -> new HashMap<>()).get(layout);
         if (result == null) {
+            // if no result in cache
+            // check each type of table (capacity) we have left
             for (int tableCapacity : layout.getCapacities()) {
                 if (tableCapacity == capacity) {
+                    // if table fits - just use it and we are done
                     result = Layout.ofTable(tableCapacity);
                     break;
                 } else if (tableCapacity > capacity) {
+                    // if table is bigger - calc the wasted capacity and compare to the current optimum
                     wastedCapacity = tableCapacity - capacity;
                     if ((result == null) || (resultWastedCapacity > wastedCapacity)) {
                         result = Layout.ofTable(tableCapacity);
                         resultWastedCapacity = wastedCapacity;
                     }
                 } else {
+                    // if the table is not enough - try to occupy it
                     subLayout = layout.removeTable(tableCapacity);
+                    // calc the optimum layout considering this table occupied
                     subResult = select(subLayout, capacity - tableCapacity, cache);
+                    // calc the wasted capacity and compare to the current optimum
                     wastedCapacity = subResult.getTotalCapacity() - (capacity - tableCapacity);
                     if ((result == null) || (resultWastedCapacity > wastedCapacity)) {
                         result = subResult.addTable(tableCapacity);
@@ -81,6 +91,7 @@ public final class TableSelectorImpl implements TableSelector {
                     }
                 }
             }
+            // update cache
             cache.get(capacity).put(layout, result);
         }
         return result;
