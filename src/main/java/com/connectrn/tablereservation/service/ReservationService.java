@@ -1,6 +1,6 @@
 package com.connectrn.tablereservation.service;
 
-import com.connectrn.tablereservation.cofig.ConfigProperties;
+import com.connectrn.tablereservation.config.ConfigProperties;
 import com.connectrn.tablereservation.model.UserInfo;
 import com.connectrn.tablereservation.model.Reservation;
 import com.connectrn.tablereservation.model.Restaurant;
@@ -15,9 +15,12 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import static java.util.function.Predicate.not;
 import static java.util.Objects.requireNonNull;
 
 @Service
@@ -48,12 +51,14 @@ public class ReservationService {
     public Reservation makeReservation(int capacity) throws ReservationException, ServiceException {
         Restaurant restaurant;
         Set<Reservation> reservations;
+        Set<Reservation> existingReservations;
         Set<Table> tables;
         Reservation reservation;
 
         checkCapacity(capacity);
         restaurant = getRestaurant();
         reservations = restaurant.getReservations();
+        existingReservations = new HashSet<>(reservations);
         if (reservations.size() == maxCount) {
             throw new ReservationException("restaurant is fully reserved");
         }
@@ -61,7 +66,9 @@ public class ReservationService {
         reservation = createReservation(tables, capacity);
         reservations.add(reservation);
         save(restaurant);
-        return reservation;
+        return reservations.stream()
+                .filter(not(existingReservations::contains))
+                .findFirst().orElseThrow(() -> new IllegalStateException("unable to find saved reservation"));
     }
 
     private void checkCapacity(int capacity) throws ReservationException {
@@ -138,7 +145,7 @@ public class ReservationService {
 
     private void save(Restaurant restaurant) throws ServiceException {
         try {
-            repository.save(restaurant);
+            repository.saveAndFlush(restaurant);
         } catch (ObjectOptimisticLockingFailureException e) {
             throw new ConcurrentDataAccessException(e);
         } catch (DataAccessException e) {
@@ -150,7 +157,11 @@ public class ReservationService {
         Restaurant restaurant;
 
         restaurant = getRestaurant();
-        return restaurant.getReservations();
+        return (userInfo.isAdmin())
+                ? restaurant.getReservations()
+                : restaurant.getReservations().stream()
+                    .filter(e -> Objects.equals(userInfo.getName(), e.getUserName()))
+                    .collect(Collectors.toSet());
     }
 
 }

@@ -60,10 +60,10 @@ public class ReservationController {
         return reservation;
     }
 
-    @DeleteMapping
+    @DeleteMapping(path = "/{id}")
     @Retryable(value = {ConcurrentDataAccessException.class}, maxAttempts = 3, backoff = @Backoff(delay = 3000))
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void deleteReservation(@RequestParam @Positive long id) throws ConcurrentDataAccessException {
+    public void deleteReservation(@PathVariable("id") long id) throws ConcurrentDataAccessException {
         try {
             service.removeReservation(id);
         } catch (ReservationException e) {

@@ -1,4 +1,4 @@
-package com.connectrn.tablereservation.cofig;
+package com.connectrn.tablereservation.config;
 
 import com.connectrn.tablereservation.model.UserInfo;
 import org.springframework.context.annotation.Bean;
@@ -8,12 +8,19 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
@@ -28,6 +35,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .httpBasic();
         http.csrf().disable();
+        http.formLogin().failureHandler(new AuthenticationFailureHandler() {
+            @Override
+            public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
+                                                AuthenticationException e) throws IOException, ServletException {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            }
+
+        });
     }
 
     @Bean

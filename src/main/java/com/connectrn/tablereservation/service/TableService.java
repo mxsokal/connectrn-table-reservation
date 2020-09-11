@@ -1,6 +1,6 @@
 package com.connectrn.tablereservation.service;
 
-import com.connectrn.tablereservation.cofig.ConfigProperties;
+import com.connectrn.tablereservation.config.ConfigProperties;
 import com.connectrn.tablereservation.model.Restaurant;
 import com.connectrn.tablereservation.model.Table;
 import com.connectrn.tablereservation.repository.RestaurantRepository;

@@ -1,4 +1,4 @@
-package com.connectrn.tablereservation.cofig;
+package com.connectrn.tablereservation.config;
 
 import com.connectrn.tablereservation.selector.TableSelector;
 import com.connectrn.tablereservation.selector.TableSelectorImpl;

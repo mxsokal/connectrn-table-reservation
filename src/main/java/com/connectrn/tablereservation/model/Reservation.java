@@ -6,6 +6,7 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import static java.util.Objects.requireNonNull;
 
@@ -71,6 +72,26 @@ public class Reservation {
     public void removeTables() {
         tables.forEach(e -> e.setReservation(null));
         tables.clear();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        Reservation reservation;
+        boolean result = true;
+
+        if (o != this) {
+            result = false;
+            if (o instanceof Reservation) {
+                reservation = (Reservation) o;
+                result = Objects.equals(id, reservation.getId());
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     @Override

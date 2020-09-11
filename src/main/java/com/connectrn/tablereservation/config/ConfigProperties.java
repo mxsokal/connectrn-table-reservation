@@ -1,4 +1,4 @@
-package com.connectrn.tablereservation.cofig;
+package com.connectrn.tablereservation.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;

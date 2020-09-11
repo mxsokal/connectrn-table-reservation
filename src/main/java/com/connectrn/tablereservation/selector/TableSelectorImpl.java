@@ -50,6 +50,8 @@ public final class TableSelectorImpl implements TableSelector {
         return Layout.valueOf(countByCapacity);
     }
 
+    // Dynamic Programming: recursion + memoization
+    // The goal is to find a table layout to reserve which minimizes the wasted space.
     private Layout select(Layout layout, int capacity, Map<Integer, Map<Layout, Layout>> cache) {
         Layout result;
         Layout subLayout;
